@@ -1,4 +1,8 @@
 *.intro-skipper.org intro-skipper.org {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+
 	# 1) Exact branches for 10.8, 10.9, 10.10
 	@ver {
 		path /manifest.json
