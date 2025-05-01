@@ -1,0 +1,70 @@
+name: Test Caddy HTTPS Redirects
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test-redirects:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install curl
+        run: sudo apt-get update && sudo apt-get install -y curl ca-certificates
+        
+      - name: Run HTTPS redirect tests
+        shell: bash
+        run: |
+          set -e
+
+          # Define all target hosts
+          HOSTS=(
+            "manifest.intro-skipper.org"
+            "165.227.244.161"
+            "161.35.245.42"
+          )
+
+          # Use domain name for Host header on IPs
+          VIRTUAL_HOST="manifest.intro-skipper.org"
+
+          run_test() {
+            HOST=$1
+            UA=$2
+            PATH=$3
+            EXPECTED=$4
+            DESC=$5
+
+            echo "::group::[$HOST] $DESC"
+
+            # Use --resolve to bind IPs to the virtual host
+            if [[ "$HOST" == "$VIRTUAL_HOST" ]]; then
+              RESOLVE=""
+              HOST_HEADER=""
+            else
+              RESOLVE="--resolve $VIRTUAL_HOST:443:$HOST"
+              HOST_HEADER="--header Host:$VIRTUAL_HOST"
+            fi
+
+            ACTUAL=$(/usr/bin/curl -s -L -o /dev/null -w "%{url_effective}" \
+              -A "$UA" \
+              $RESOLVE \
+              $HOST_HEADER \
+              --connect-timeout 10 \
+              "https://$VIRTUAL_HOST$PATH")
+
+            if [[ "$ACTUAL" == "$EXPECTED" ]]; then
+              echo "✅ PASS"
+            else
+              echo "❌ FAIL: expected '$EXPECTED', got '$ACTUAL'"
+              exit 1
+            fi
+            echo "::endgroup::"
+          }
+
+          for HOST in "${HOSTS[@]}"; do
+            run_test $HOST "Jellyfin-Server/10.8.7" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/10.8/manifest.json" "10.8 → branch"
+            run_test $HOST "Jellyfin-Server/10.9.2" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/10.9/manifest.json" "10.9 → branch"
+            run_test $HOST "Jellyfin-Server/10.10.1" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/10.10/manifest.json" "10.10 → branch"
+            run_test $HOST "Jellyfin-Server/10.11.0" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/10.10/manifest.json" "Unknown 10.x → fallback"
+            run_test $HOST "Jellyfin-Server/10.9.2" "/" "https://github.com/intro-skipper/" "Not /manifest.json → GitHub"
+            run_test $HOST "curl/8.5.0" "/manifest.json" "https://github.com/intro-skipper/" "Non-Jellyfin UA → GitHub"
+          done
