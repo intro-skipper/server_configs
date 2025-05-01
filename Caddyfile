@@ -1,0 +1,53 @@
+*.intro-skipper.org intro-skipper.org {
+        tls {
+                dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+        }
+
+        # 1) Any request not for /manifest.json → GitHub
+        @notManifest {
+                not path /manifest.json
+        }
+        redir @notManifest https://github.com/intro-skipper/ 302
+
+        # 2) Requests for /manifest.json but UA is NOT Jellyfin-Server/* → GitHub
+        @manifestNoJelly {
+                path /manifest.json
+                not header User-Agent Jellyfin-Server/*
+        }
+        redir @manifestNoJelly https://github.com/intro-skipper/ 302
+
+        # 3) Now only requests for /manifest.json with UA starting Jellyfin-Server/
+        #    Apply version-specific redirects:
+
+        # prepared for 10.11 
+        #@ua10_11 {
+        #    path /manifest.json
+        #    header_regexp UA10_11 User-Agent ^Jellyfin-Server/10\.11\..*$
+        #}
+        #redir @ua10_11 https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/10.11/manifest.json 302
+
+        @ua10_10 {
+                path /manifest.json
+                header_regexp UA10_10 User-Agent ^Jellyfin-Server/10\.10\..*$
+        }
+        redir @ua10_10 https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/10.10/manifest.json 302
+
+        @ua10_9 {
+                path /manifest.json
+                header_regexp UA10_9 User-Agent ^Jellyfin-Server/10\.9\..*$
+        }
+        redir @ua10_9 https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/10.9/manifest.json 302
+
+        @ua10_8 {
+                path /manifest.json
+                header_regexp UA10_8 User-Agent ^Jellyfin-Server/10\.8\..*$
+        }
+        redir @ua10_8 https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/10.8/manifest.json 302
+
+        # 4) Fallback for any other Jellyfin-Server/10.* → 10.10 branch
+        @ua10 {
+                path /manifest.json
+                header_regexp UA10 User-Agent ^Jellyfin-Server/10\..*$
+        }
+        redir @ua10 https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/10.10/manifest.json 302
+}
