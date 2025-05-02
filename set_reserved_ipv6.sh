@@ -4,45 +4,62 @@ set -euo pipefail
 # ─────────────────────────────────────────────────────
 # Configuration
 # ─────────────────────────────────────────────────────
-IFACE_ETH0="eth0"
-IFACE_LO="lo"
-PREFIX_LEN="128"
-
 METADATA_URL="http://169.254.169.254/metadata/v1.json"
-DISPATCHER_DIR="/etc/networkd-dispatcher/routable.d"
-SCRIPT_NAME="10-custom-ipv6.sh"
-SCRIPT_PATH="${DISPATCHER_DIR}/${SCRIPT_NAME}"
+NETPLAN_FILE="/etc/netplan/50-custom.yaml"
+TABLE_ID=100
 
 # ─────────────────────────────────────────────────────
 # Fetch metadata
 # ─────────────────────────────────────────────────────
 if ! md=$(curl -fsSL "${METADATA_URL}"); then
-    echo "ERROR: Cannot fetch metadata from ${METADATA_URL}" >&2
-    exit 1
+  echo "ERROR: cannot fetch metadata from ${METADATA_URL}" >&2
+  exit 1
 fi
 
 # ─────────────────────────────────────────────────────
 # Parse IPv6 reserved IP info
 # ─────────────────────────────────────────────────────
-# (jq -r will error if JSON is invalid)
 ip6_active=$(jq -r '.reserved_ip.ipv6.active' <<<"${md}")
 if [[ "${ip6_active}" != "true" ]]; then
-    echo "IPv6 reserved IP is not active; nothing to do."
-    exit 0
+  echo "IPv6 reserved IP is not active; nothing to do."
+  exit 0
 fi
-
 rip6=$(jq -r '.reserved_ip.ipv6.ip_address' <<<"${md}")
 
 # ─────────────────────────────────────────────────────
-# Write dispatcher script atomically
+# Write netplan config with its own routing table + policy
 # ─────────────────────────────────────────────────────
-mkdir -p "${DISPATCHER_DIR}"
-cat > "${SCRIPT_PATH}" <<EOF
-#!/bin/sh
-# auto-generated: apply reserved IPv6
-ip -6 addr replace ${rip6}/${PREFIX_LEN} dev ${IFACE_LO} scope global
-ip -6 route replace default dev ${IFACE_ETH0}
+cat > "${NETPLAN_FILE}" <<EOF
+network:
+  version: 2
+  ethernets:
+    eth0:
+      dhcp4: true
+      dhcp6: no
+      accept-ra: true
+      addresses:
+        - ${rip6}/128
+      routes:
+        - to: ::/0
+          via: "::"
+          table: ${TABLE_ID}
+      routing-policy:
+        - from: ${rip6}/128
+          table: ${TABLE_ID}
 EOF
 
-chmod +x "${SCRIPT_PATH}"
-echo "Created default IPv6 route via ${IFACE_ETH0} (script: ${SCRIPT_PATH})"
+# Secure the Netplan file
+chmod 600 "${NETPLAN_FILE}"
+echo "Set permissions 600 on ${NETPLAN_FILE}"  
+
+echo "Wrote ${NETPLAN_FILE}:"
+echo "  • IPv6: ${rip6}/128"
+echo "  • default route in table ${TABLE_ID}"
+echo "  • routing-policy on eth0: from ${rip6} → table ${TABLE_ID}"
+echo
+
+# ─────────────────────────────────────────────────────
+# Apply
+# ─────────────────────────────────────────────────────
+netplan apply
+echo "netplan apply completed; IPv6 should now be up on eth0 using table ${TABLE_ID}"
