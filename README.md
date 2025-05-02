@@ -25,15 +25,10 @@ All rules are `Custom filter expressions`
 
 ## Reserved IPv6 DigitalOcean
 
-You can drop a small systemd-networkd-dispatcher hook:
+Inspired by DigitalOcean Docs [Enable Reserved IPv6](https://docs.digitalocean.com/products/networking/reserved-ips/how-to/manually-enable/#enable-reserved-ipv6)
 
-1. **Create** `/etc/networkd-dispatcher/routable.d/10-custom-ipv6.sh`:
-   ```bash
-   #!/bin/sh
-   ip -6 addr replace <IPV6>/128 dev lo scope global
-   ip -6 route replace default dev eth0
-   ```
-2. **Make it executable**:
-   ```bash
-   chmod +x /etc/networkd-dispatcher/routable.d/10-custom-ipv6.sh
-   ```
+Our script generates and implements a permanent network plan.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/intro-skipper/server_configs/refs/heads/main/set_reserved_ipv6.sh | bash
+```
