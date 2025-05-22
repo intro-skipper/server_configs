@@ -2,6 +2,10 @@
 
 Jellyfin currently has no way to limit the maximum ABI version. This means that people can install incompatible versions of a plugin. Unfortunately, the error is only visible after restarting Jellyfin. The average user expects to be offered only working and compatible versions.
 
+## Caddy
+
+The easiest method of self-hosting is to use Caddy, which is how we currently deploy on DigitalOcean.  See the `docker-compose.yaml` and `Caddyfile` for reference.
+
 ## Apache Server with mod_rewrite 
 
 Almost all webhosters have Apache `mod_rewrite` enabled. PHP always has restrictions and is not needed anyway.
