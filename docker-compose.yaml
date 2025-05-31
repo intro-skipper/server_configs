@@ -1,11 +1,8 @@
 services:
   caddy:
     image: 'ghcr.io/caddybuilds/caddy-cloudflare:latest'
+    # Don't forget firewall and only open 80/443!
     network_mode: host
-    ports:
-      - '80:80'
-      - '443:443'
-      - '443:443/udp'   
     volumes:
       - '/conf/Caddyfile:/etc/caddy/Caddyfile'
       - 'caddy_data:/data'
