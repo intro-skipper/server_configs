@@ -4,7 +4,7 @@ services:
     # Don't forget firewall and only open 80/443!
     network_mode: host
     volumes:
-      - '/conf/Caddyfile:/etc/caddy/Caddyfile'
+      - '/conf/Caddyfile:/etc/caddy/Caddyfile:ro'
       - 'caddy_data:/data'
       - 'caddy_config:/config'
     environment:
