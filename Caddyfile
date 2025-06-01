@@ -8,14 +8,14 @@
 		path /manifest.json
 		header_regexp VER User-Agent ^Jellyfin-Server/(10\.(?:8|9|10))\..*$
 	}
-	redir @ver https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/{http.regexp.VER.1}/manifest.json 302
+	redir @ver https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/{http.regexp.VER.1}/manifest.json 302
 
 	# 2) Fallback for any other 10.x
 	@verFallback {
 		path /manifest.json
 		header_regexp ANY10 User-Agent ^Jellyfin-Server/10\..*$
 	}
-	redir @verFallback https://raw.githubusercontent.com/intro-skipper/intro-skipper/refs/heads/10.10/manifest.json 302
+	redir @verFallback https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json 302
 
 	# 3a) Requests not for /manifest.json → GitHub
 	@notManifest {
