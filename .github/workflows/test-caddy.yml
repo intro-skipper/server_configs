@@ -10,17 +10,19 @@ jobs:
     steps:
       - name: Install curl
         run: sudo apt-get update && sudo apt-get install -y curl ca-certificates
-        
+
       - name: Run HTTPS redirect tests
         shell: bash
         run: |
           set -e
 
-          # Define all target hosts
+          # Define all target hosts, including IPv6 addresses
           HOSTS=(
             "manifest.intro-skipper.org"
             "165.227.244.161"
             "161.35.245.42"
+            "2a03:b0c0:2:f0::841b:d001"
+            "2a03:b0c0:3:f0::cd5f:a000"
           )
 
           # Use domain name for Host header on IPs
@@ -36,18 +38,23 @@ jobs:
             echo "::group::[$HOST] $DESC"
 
             # Use --resolve to bind IPs to the virtual host
+            # For IPv6, the address needs to be bracketed in --resolve
             if [[ "$HOST" == "$VIRTUAL_HOST" ]]; then
-              RESOLVE=""
-              HOST_HEADER=""
+              RESOLVE_OPT=""
+              HOST_HEADER_OPT=""
             else
-              RESOLVE="--resolve $VIRTUAL_HOST:443:$HOST"
-              HOST_HEADER="--header Host:$VIRTUAL_HOST"
+              if [[ "$HOST" == *":"* ]]; then # Check if HOST is an IPv6 address
+                RESOLVE_OPT="--resolve $VIRTUAL_HOST:443:[$HOST]"
+              else # Assume HOST is an IPv4 address
+                RESOLVE_OPT="--resolve $VIRTUAL_HOST:443:$HOST"
+              fi
+              HOST_HEADER_OPT="--header Host:$VIRTUAL_HOST"
             fi
 
             ACTUAL=$(/usr/bin/curl -s -L -o /dev/null -w "%{url_effective}" \
               -A "$UA" \
-              $RESOLVE \
-              $HOST_HEADER \
+              $RESOLVE_OPT \
+              $HOST_HEADER_OPT \
               --connect-timeout 10 \
               "https://$VIRTUAL_HOST$PATH")
 
@@ -61,10 +68,10 @@ jobs:
           }
 
           for HOST in "${HOSTS[@]}"; do
-            run_test $HOST "Jellyfin-Server/10.8.7" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.8/manifest.json" "10.8 → branch"
-            run_test $HOST "Jellyfin-Server/10.9.2" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.9/manifest.json" "10.9 → branch"
-            run_test $HOST "Jellyfin-Server/10.10.1" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json" "10.10 → branch"
-            run_test $HOST "Jellyfin-Server/10.11.0" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json" "Unknown 10.x → fallback"
-            run_test $HOST "Jellyfin-Server/10.9.2" "/" "https://github.com/intro-skipper/" "Not /manifest.json → GitHub"
-            run_test $HOST "curl/8.5.0" "/manifest.json" "https://github.com/intro-skipper/" "Non-Jellyfin UA → GitHub"
+            run_test "$HOST" "Jellyfin-Server/10.8.7" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.8/manifest.json" "10.8 → branch"
+            run_test "$HOST" "Jellyfin-Server/10.9.2" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.9/manifest.json" "10.9 → branch"
+            run_test "$HOST" "Jellyfin-Server/10.10.1" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json" "10.10 → branch"
+            run_test "$HOST" "Jellyfin-Server/10.11.0" "/manifest.json" "https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json" "Unknown 10.x → fallback"
+            run_test "$HOST" "Jellyfin-Server/10.9.2" "/" "https://github.com/intro-skipper/" "Not /manifest.json → GitHub"
+            run_test "$HOST" "curl/8.5.0" "/manifest.json" "https://github.com/intro-skipper/" "Non-Jellyfin UA → GitHub"
           done
