@@ -3,10 +3,10 @@
 		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 	}
 
-	# 1) Exact branches for 10.8, 10.9, 10.10
+	# 1) Exact branches for 10.8, 10.9, 10.10, 10.11
 	@ver {
 		path /manifest.json
-		header_regexp VER User-Agent ^Jellyfin-Server/(10\.(?:8|9|10))\..*$
+		header_regexp VER User-Agent ^Jellyfin-Server/(10\.(?:8|9|10|11))\..*$
 	}
 	redir @ver https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/{http.regexp.VER.1}/manifest.json 302
 

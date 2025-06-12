@@ -5,6 +5,10 @@ RewriteCond %{REQUEST_URI} !/manifest\.json$ [OR]
 RewriteCond %{HTTP_USER_AGENT} !^Jellyfin-Server/
 RewriteRule ^.*$ https://github.com/intro-skipper/ [R=302,L]
 
+# Specific redirects for Jellyfin-Server/10.11.*
+RewriteCond %{HTTP_USER_AGENT} ^Jellyfin-Server/10\.11\..*$
+RewriteRule ^.*$ https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.11/manifest.json [R=302,L]
+
 # Specific redirects for Jellyfin-Server/10.10.*
 RewriteCond %{HTTP_USER_AGENT} ^Jellyfin-Server/10\.10\..*$
 RewriteRule ^.*$ https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json [R=302,L]
