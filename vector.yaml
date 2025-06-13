@@ -1,0 +1,32 @@
+sources:
+  weblogs:
+    type: file
+    include:
+      - /var/log/caddy/access.log
+
+transforms:
+  caddy:
+    type: remap
+    inputs: ["weblogs"]
+    source: |
+      . = parse_json!(.message)
+      .server = "${LOCATION}"
+      time = from_unix_timestamp!(to_int!(.ts * 1000 ?? 0), unit: "milliseconds")
+      .timestamp = format_timestamp!(time, format: "%F %H:%M:%S%.f")
+      proto = "http"
+      if .request.tls.proto == "h2" || .request.tls.proto == "h3" {
+        proto = "https"
+      }
+      .request_url, _ = proto + "://" + downcase(.request.host) + .request.uri
+      .agent = .request.headers."User-Agent"[0]
+  caddy_filter:
+    type: filter
+    inputs: ["caddy"]
+    condition: ".status == 302"
+
+sinks:
+  axiom_sink:
+    type: axiom
+    inputs: ["caddy_filter"]
+    dataset: ${AXIOM_DATASET}
+    token: ${AXIOM_TOKEN}

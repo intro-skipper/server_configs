@@ -2,7 +2,21 @@
 	tls {
 		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 	}
-
+	log {
+		output file /var/log/caddy/access.log {
+			# Optional: Configure log rotation
+			roll_size 100mb
+			roll_keep 10
+		}
+		# Remove any IPs from logging
+		format filter {
+			wrap json
+			fields {
+				request>remote_addr delete
+				request>remote_ip delete
+			}
+		}
+	}
 	# 1) Exact branches for 10.8, 10.9, 10.10, 10.11
 	@ver {
 		path /manifest.json
@@ -21,12 +35,12 @@
 	@notManifest {
 		not path /manifest.json
 	}
-	redir @notManifest https://github.com/intro-skipper/ 302
+	redir @notManifest https://github.com/intro-skipper/ 308
 
 	# 3b) /manifest.json but UA not Jellyfin-Server/* → GitHub
 	@manifestNoJelly {
 		path /manifest.json
 		not header User-Agent Jellyfin-Server/*
 	}
-	redir @manifestNoJelly https://github.com/intro-skipper/ 302
+	redir @manifestNoJelly https://github.com/intro-skipper/ 308
 }

@@ -7,10 +7,25 @@ services:
       - '/conf/Caddyfile:/etc/caddy/Caddyfile:ro'
       - 'caddy_data:/data'
       - 'caddy_config:/config'
+       - caddy_logs:/var/log/caddy
     environment:
       - 'CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}'
     restart: always
+  vector:
+     image: timberio/vector:latest-alpine
+     container_name: vector-agent
+     restart: unless-stopped
+     environment:
+       - AXIOM_TOKEN=${AXIOM_TOKEN}
+       - AXIOM_DATASET=${AXIOM_DATASET}
+       - LOCATION=${LOCATION}
+     volumes:
+       - /conf/vector.yaml:/etc/vector/vector.yaml
+       - caddy_logs:/var/log/caddy:ro
+     depends_on:
+       - caddy
 
 volumes:
   caddy_data:
   caddy_config:
+  caddy_logs:
