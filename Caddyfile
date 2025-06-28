@@ -7,6 +7,7 @@
 			# Optional: Configure log rotation
 			roll_size 100mb
 			roll_keep 10
+			roll_keep_for 1d
 		}
 		# Remove any IPs from logging
 		format filter {
