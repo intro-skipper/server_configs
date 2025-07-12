@@ -19,6 +19,10 @@
 			}
 		}
 	}
+
+	@discord host discord.intro-skipper.org
+	redir @discord https://discord.gg/AYZ7RJ3BuA 308
+
 	# 1) Exact branches for 10.8, 10.9, 10.10, 10.11
 	@ver {
 		path /manifest.json
