@@ -23,6 +23,7 @@ All rules are `Custom filter expressions`
 
 | **Field**  | **Operator**    | **Value**               | **URL redirect Type** | **URL**                                                                                      | Status code |
 |------------|-----------------|-------------------------|-----------------------|----------------------------------------------------------------------------------------------|-------------|
+| User Agent | strict wildcard | Jellyfin-Server/10.11.* | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.11/manifest.json> | 302         |
 | User Agent | strict wildcard | Jellyfin-Server/10.10.* | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json> | 302         |
 | User Agent | strict wildcard | Jellyfin-Server/10.9.*  | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.9/manifest.json>  | 302         |
 | User Agent | strict wildcard | Jellyfin-Server/10.8.*  | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.8/manifest.json>  | 302         |
