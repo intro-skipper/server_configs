@@ -1,16 +1,14 @@
 services:
   caddy:
-    image: 'ghcr.io/caddybuilds/caddy-cloudflare:latest'
-    # Don't forget firewall and only open 80/443!
-    network_mode: host
-    volumes:
-      - '/conf/Caddyfile:/etc/caddy/Caddyfile:ro'
-      - 'caddy_data:/data'
-      - 'caddy_config:/config'
+     image: ghcr.io/caddybuilds/caddy-cloudflare:latest
+     network_mode: host
+     volumes:
+       - /home/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+       - /home/caddy/certs:/data
        - caddy_logs:/var/log/caddy
-    environment:
-      - 'CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}'
-    restart: always
+     environment:
+       - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+     restart: always
   vector:
      image: timberio/vector:latest-alpine
      container_name: vector-agent
@@ -20,12 +18,24 @@ services:
        - AXIOM_DATASET=${AXIOM_DATASET}
        - LOCATION=${LOCATION}
      volumes:
-       - /conf/vector.yaml:/etc/vector/vector.yaml
+       - /home/caddy/vector.yaml:/etc/vector/vector.yaml
        - caddy_logs:/var/log/caddy:ro
      depends_on:
        - caddy
-
+  go_caddy_url_updater:
+     image: ghcr.io/jumoog/go_caddy_url_updater:latest
+     container_name: go_caddy_url_updater
+     restart: unless-stopped
+     network_mode: host
+     environment:
+       - GITHUB_SECRETKEY=${GITHUB_SECRETKEY}
+       - CADDYFILE_PATH=/etc/caddy/Caddyfile
+       - CADDY_CONTAINER=${CADDY_CONTAINER}
+       - DOCKER_SOCK=/var/run/docker.sock
+     volumes:
+       - /home/caddy/Caddyfile:/etc/caddy/Caddyfile
+       - /var/run/docker.sock:/var/run/docker.sock
+     depends_on:
+       - caddy
 volumes:
-  caddy_data:
-  caddy_config:
   caddy_logs:
