@@ -23,6 +23,21 @@
 	@discord host discord.intro-skipper.org
 	redir @discord https://discord.gg/AYZ7RJ3BuA 308
 
+	@github host ams.intro-skipper.org fra.intro-skipper.org
+	handle @github {
+		@blocked {
+			not path /{$GITHUB_HOOK}
+		}
+		@hook {
+			path /{$GITHUB_HOOK}
+		}
+		abort @blocked
+		handle @hook {
+			rewrite /hook
+			reverse_proxy 127.0.0.1:8080
+		}
+	}
+
 	# 1) Exact branches for 10.8, 10.9, 10.10, 10.11
 	@ver {
 		path /manifest.json
@@ -39,6 +54,7 @@
 
 	# 3a) Requests not for /manifest.json → GitHub
 	@notManifest {
+		not host fra.intro-skipper.org ams.intro-skipper.org
 		not path /manifest.json
 	}
 	redir @notManifest https://github.com/intro-skipper/ 308
