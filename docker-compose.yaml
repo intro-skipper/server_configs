@@ -23,7 +23,7 @@ services:
      depends_on:
        - caddy
   go_caddy_url_updater:
-     image: ghcr.io/jumoog/go_caddy_url_updater:latest
+     image: ghcr.io/intro-skipper/go_caddy_url_updater:latest
      container_name: go_caddy_url_updater
      restart: unless-stopped
      network_mode: host
