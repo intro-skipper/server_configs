@@ -6,6 +6,10 @@ Jellyfin currently has no way to limit the maximum ABI version. This means that 
 
 The easiest method of self-hosting is to use Caddy, which is how we currently deploy on DigitalOcean.  See the `docker-compose.yaml` and `Caddyfile` for reference.
 
+### Caddyfile Updater _(optional)_
+
+We switched to [jsDelivr](https://www.jsdelivr.com/package/gh/intro-skipper/manifest) in oder to serve manifest and logo requests in without hitting GitHub API limits. [Caddyfile Updater](https://github.com/intro-skipper/go_caddy_url_updater) always serves the current version by updating the Caddyfile and reloading Caddy without any downtime.
+
 ## Apache Server with mod_rewrite 
 
 Almost all webhosters have Apache `mod_rewrite` enabled. PHP always has restrictions and is not needed anyway.
