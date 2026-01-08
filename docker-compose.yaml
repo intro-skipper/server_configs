@@ -32,6 +32,8 @@ services:
        - CADDYFILE_PATH=/etc/caddy/Caddyfile
        - CADDY_CONTAINER=${CADDY_CONTAINER}
        - DOCKER_SOCK=/var/run/docker.sock
+       - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+       - LOCATION=${LOCATION}
      volumes:
        - /home/caddy/Caddyfile:/etc/caddy/Caddyfile
        - /var/run/docker.sock:/var/run/docker.sock
