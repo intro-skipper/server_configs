@@ -8,11 +8,13 @@ services:
        - caddy_logs:/var/log/caddy
      environment:
        - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+       - GITHUB_HOOK=${GITHUB_HOOK}
      restart: always
   vector:
      image: timberio/vector:latest-alpine
      container_name: vector-agent
      restart: unless-stopped
+     stop_grace_period: 30s
      environment:
        - AXIOM_TOKEN=${AXIOM_TOKEN}
        - AXIOM_DATASET=${AXIOM_DATASET}
@@ -20,6 +22,7 @@ services:
      volumes:
        - /home/caddy/vector.yaml:/etc/vector/vector.yaml
        - caddy_logs:/var/log/caddy:ro
+       - vector_data:/var/lib/vector
      depends_on:
        - caddy
   go_caddy_url_updater:
@@ -41,3 +44,4 @@ services:
        - caddy
 volumes:
   caddy_logs:
+  vector_data:
