@@ -20,6 +20,11 @@
 		}
 	}
 
+	vars {
+		default_version "10.11"
+		commit_hash "d340f16ba1256ec563d7b08c0396645d555e65b8"
+	}
+
 	@discord host discord.intro-skipper.org
 	redir @discord https://discord.gg/AYZ7RJ3BuA 308
 
@@ -43,14 +48,14 @@
 		path /manifest.json
 		header_regexp VER User-Agent ^Jellyfin-Server/(10\.(?:8|9|10|11))\..*$
 	}
-	redir @ver https://cdn.jsdelivr.net/gh/intro-skipper/manifest@d340f16ba1256ec563d7b08c0396645d555e65b8/{http.regexp.VER.1}/manifest.json 302
+	redir @ver https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/{http.regexp.VER.1}/manifest.json 302
 
 	# 2) Fallback for any other 10.x
 	@verFallback {
 		path /manifest.json
 		header_regexp ANY10 User-Agent ^Jellyfin-Server/10\..*$
 	}
-	redir @verFallback https://cdn.jsdelivr.net/gh/intro-skipper/manifest@d340f16ba1256ec563d7b08c0396645d555e65b8/10.11/manifest.json 302
+	redir @verFallback https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/{vars.default_version}/manifest.json 302
 
 	# 3a) Requests not for /manifest.json → GitHub
 	@notManifest {
