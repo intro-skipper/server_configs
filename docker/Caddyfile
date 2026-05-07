@@ -28,7 +28,7 @@
 	@discord host discord.intro-skipper.org
 	redir @discord https://discord.gg/AYZ7RJ3BuA 308
 
-	@github host ams.intro-skipper.org fra.intro-skipper.org
+	@github host fsn1.intro-skipper.org ams.intro-skipper.org fra.intro-skipper.org
 	handle @github {
 		@blocked {
 			not path /{$GITHUB_HOOK}
@@ -59,7 +59,7 @@
 
 	# 3a) Requests not for /manifest.json → GitHub
 	@notManifest {
-		not host fra.intro-skipper.org ams.intro-skipper.org
+		not host fsn1.intro-skipper.org fra.intro-skipper.org ams.intro-skipper.org
 		not path /manifest.json
 	}
 	redir @notManifest https://github.com/intro-skipper/ 308
