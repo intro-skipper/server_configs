@@ -21,6 +21,7 @@ jobs:
             "manifest.intro-skipper.org"
             "165.227.244.161"
             "161.35.245.42"
+            "178.105.98.131"
           )
 
           # Use domain name for Host header on IPs
