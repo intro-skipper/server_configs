@@ -3,21 +3,7 @@
 		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 	}
 	log {
-		output file /var/log/caddy/access.log {
-			# Optional: Configure log rotation
-			roll_size 100mb
-			roll_keep 10
-			roll_keep_for 1d
-		}
-		# Remove any IPs from logging
-		format filter {
-			wrap json
-			fields {
-				request>remote_addr delete
-				request>remote_ip delete
-				request>client_ip delete
-			}
-		}
+		output discard
 	}
 
 	vars {
