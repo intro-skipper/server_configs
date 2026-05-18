@@ -5,7 +5,6 @@ services:
      volumes:
        - /home/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
        - /home/caddy/certs:/data
-       - caddy_logs:/var/log/caddy
      environment:
        - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
        - GITHUB_HOOK=${GITHUB_HOOK}
@@ -27,5 +26,3 @@ services:
        - /var/run/docker.sock:/var/run/docker.sock
      depends_on:
        - caddy
-volumes:
-  caddy_logs:
