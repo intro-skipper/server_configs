@@ -97,7 +97,7 @@ jobs:
             run_test "$HOST" "Jellyfin-Server/10.9.2" "/manifest.json" "cdn:10.9" "10.9 → branch"
             run_test "$HOST" "Jellyfin-Server/10.10.1" "/manifest.json" "cdn:10.10" "10.10 → branch"
             run_test "$HOST" "Jellyfin-Server/10.11.0" "/manifest.json" "cdn:10.11" "10.11 → branch"
-            run_test "$HOST" "Jellyfin-Server/10.12.0" "/manifest.json" "cdn:10.11" "Unknown 10.x → fallback"
+            run_test "$HOST" "Jellyfin-Server/12.0.0" "/manifest.json" "cdn:12.0" "12.0 → branch"
             run_test "$HOST" "Jellyfin-Server/10.9.2" "/" "literal:https://github.com/intro-skipper/" "Not /manifest.json → GitHub"
             run_test "$HOST" "curl/8.5.0" "/manifest.json" "literal:https://github.com/intro-skipper/" "Non-Jellyfin UA → GitHub"
           done
