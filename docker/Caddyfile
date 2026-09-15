@@ -8,7 +8,7 @@
 
 	vars {
 		default_version "10.11"
-		commit_hash "d340f16ba1256ec563d7b08c0396645d555e65b8"
+		commit_hash "e0c7d065e10aa4882308bf55462f9bb6733f17bc"
 	}
 
 	@discord host discord.intro-skipper.org
