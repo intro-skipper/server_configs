@@ -6,6 +6,10 @@ Jellyfin currently has no way to limit the maximum ABI version. This means that 
 
 The easiest method of self-hosting is to use Caddy, which is how we currently deploy on DigitalOcean.  See the `docker-compose.yaml` and `Caddyfile` for reference.
 
+All Jellyfin 12.x clients use the canonical `12/manifest.json` catalog. Jellyfin 10.x clients keep their minor-version catalogs, such as `10.11/manifest.json`. The manifest publisher keeps `12.0/manifest.json` and `12.0/manifest-prerelease.json` synchronized with their `12/` counterparts for existing direct URLs.
+
+When migrating from `12.0/`, publish the new `12/` catalogs and updated publishing scripts first. Before deploying this Caddyfile, ensure its `commit_hash` points to a manifest commit containing `12/manifest.json`; update the hash manually or let the Caddyfile Updater synchronize it after the manifest changes land on `main`. The HTTPS redirect workflow tests deployed servers rather than the checked-out Caddyfile, so rerun it after deployment.
+
 ### Caddyfile Updater _(optional)_
 
 We switched to [jsDelivr](https://www.jsdelivr.com/package/gh/intro-skipper/manifest) in oder to serve manifest and logo requests in without hitting GitHub API limits. [Caddyfile Updater](https://github.com/intro-skipper/go_caddy_url_updater) always serves the current version by updating the Caddyfile and reloading Caddy without any downtime.
@@ -27,6 +31,7 @@ All rules are `Custom filter expressions`
 
 | **Field**  | **Operator**    | **Value**               | **URL redirect Type** | **URL**                                                                                      | Status code |
 |------------|-----------------|-------------------------|-----------------------|----------------------------------------------------------------------------------------------|-------------|
+| User Agent | strict wildcard | Jellyfin-Server/12.*    | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/12/manifest.json>    | 302         |
 | User Agent | strict wildcard | Jellyfin-Server/10.11.* | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.11/manifest.json> | 302         |
 | User Agent | strict wildcard | Jellyfin-Server/10.10.* | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json> | 302         |
 | User Agent | strict wildcard | Jellyfin-Server/10.9.*  | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.9/manifest.json>  | 302         |
