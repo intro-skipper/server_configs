@@ -30,9 +30,15 @@
 	}
 
 	# 1) All supported versions: any 10.x or 12.x
+	@ver12 {
+		path /manifest.json
+		header_regexp VER12 User-Agent ^Jellyfin-Server/12\.\d+\..*$
+	}
+	redir @ver12 https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/12.0/manifest.json 302
+
 	@ver {
 		path /manifest.json
-		header_regexp VER User-Agent ^Jellyfin-Server/(10\.\d+|12\.\d+)\..*$
+		header_regexp VER User-Agent ^Jellyfin-Server/(10\.\d+)\..*$
 	}
 	redir @ver https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/{http.regexp.VER.1}/manifest.json 302
 
