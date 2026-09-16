@@ -1,7 +1,7 @@
 name: Test Caddy HTTPS Redirects
 
 on:
-  push:
+  workflow_call:
   workflow_dispatch:
 
 jobs:

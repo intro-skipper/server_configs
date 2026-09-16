@@ -1,0 +1,52 @@
+name: Deploy Caddyfile
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-caddy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Resolve current manifest commit
+        id: manifest
+        run: |
+          set -euo pipefail
+          hash=$(git ls-remote https://github.com/intro-skipper/manifest.git refs/heads/main | cut -f1)
+          if [[ ! "$hash" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::could not resolve manifest@main commit (got '$hash')"
+            exit 1
+          fi
+          echo "hash=$hash" >> "$GITHUB_OUTPUT"
+          echo "manifest@main = $hash"
+
+      - name: Upload, validate and reload Caddyfile
+        env:
+          HASH: ${{ steps.manifest.outputs.hash }}
+          SSH_OPTS: -o StrictHostKeyChecking=no -o ConnectTimeout=15
+        run: |
+          set -euo pipefail
+          for h in fra ams germany; do
+            host="root@$h.tailf8baf.ts.net"
+            echo "::group::$h"
+            sed "s/commit_hash \"[0-9a-f]*\"/commit_hash \"$HASH\"/" docker/Caddyfile \
+              | ssh $SSH_OPTS "$host" 'cat > /home/caddy/Caddyfile.new'
+            ssh $SSH_OPTS "$host" bash -s < docker/deploy-remote.sh
+            echo "::endgroup::"
+          done
+
+  test:
+    needs: deploy
+    uses: ./.github/workflows/test-caddy.yml
