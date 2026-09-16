@@ -19,7 +19,7 @@ jobs:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
-          ping: fra,ams,germany
+          ping: fra.tailf8baf.ts.net,ams.tailf8baf.ts.net,germany.tailf8baf.ts.net
 
       - name: Resolve current manifest commit
         id: manifest
