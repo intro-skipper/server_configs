@@ -8,7 +8,42 @@ The easiest method of self-hosting is to use Caddy, which is how we currently de
 
 All Jellyfin 12.x clients use the canonical `12/manifest.json` catalog. Jellyfin 10.x clients keep their minor-version catalogs, such as `10.11/manifest.json`. The manifest publisher keeps `12.0/manifest.json` and `12.0/manifest-prerelease.json` synchronized with their `12/` counterparts for existing direct URLs.
 
-When migrating from `12.0/`, publish the new `12/` catalogs and updated publishing scripts first. Before deploying this Caddyfile, ensure its `commit_hash` points to a manifest commit containing `12/manifest.json`; update the hash manually or let the Caddyfile Updater synchronize it after the manifest changes land on `main`. The HTTPS redirect workflow tests deployed servers rather than the checked-out Caddyfile, so rerun it after deployment.
+When migrating from `12.0/`, publish the new `12/` catalogs and updated publishing scripts first, so that `manifest@main` contains `12/manifest.json` before the Caddyfile is deployed. The `commit_hash` committed in this repo is only a placeholder: the deploy workflow replaces it with the current `manifest@main` commit, and the Caddyfile Updater keeps it in sync afterwards.
+
+### Deploying the Caddyfile
+
+Deployment is done by the **Deploy Caddyfile** GitHub Actions workflow ([`deploy-caddy.yml`](.github/workflows/deploy-caddy.yml)). It is triggered manually only:
+
+1. Merge the Caddyfile change to `main`.
+2. Actions → **Deploy Caddyfile** → *Run workflow* (branch `main`).
+
+The workflow joins the tailnet with [tailscale/github-action](https://github.com/tailscale/github-action) as an ephemeral `tag:ci` node and, for each server (`fra`, `ams`, `germany`), over Tailscale SSH:
+
+1. uploads `docker/Caddyfile` with `commit_hash` set to the current `intro-skipper/manifest@main` commit,
+2. runs [`docker/deploy-remote.sh`](docker/deploy-remote.sh), which validates the new config inside the Caddy container (so `{env.*}` placeholders resolve), overwrites `/home/caddy/Caddyfile` in place and gracefully reloads Caddy,
+3. finally runs the HTTPS redirect tests ([`test-caddy.yml`](.github/workflows/test-caddy.yml)) against the live servers.
+
+An invalid Caddyfile fails the job before anything on disk changes. `/home/caddy/Caddyfile` is a single-file bind mount, so it must be overwritten in place, never replaced with `mv`.
+
+The redirect tests only run as part of the deploy (or via *Run workflow*), since they test the deployed servers rather than the checked-out Caddyfile.
+
+#### One-time setup
+
+- Tailscale ACL: a `tagOwners` entry for `tag:ci`, an `acls`/`grants` rule allowing `tag:ci` → server tag on port 22, and an `ssh` rule (`action: accept`) allowing `tag:ci` to log in as `root`. Without the network rule the servers never show up in the runner's peer list and the workflow hangs on `ping`.
+- A Tailscale OAuth client with the `auth_keys` write scope, tagged `tag:ci`.
+- Repository secrets `TS_OAUTH_CLIENT_ID` and `TS_OAUTH_SECRET`.
+
+#### Manual deploy
+
+The same steps can be run by hand from a machine on the tailnet:
+
+```bash
+hash=$(git ls-remote https://github.com/intro-skipper/manifest.git refs/heads/main | cut -f1)
+for h in fra ams germany; do
+  sed "s/commit_hash \"[0-9a-f]*\"/commit_hash \"$hash\"/" docker/Caddyfile | ssh root@$h 'cat > /home/caddy/Caddyfile.new'
+  ssh root@$h bash -s < docker/deploy-remote.sh
+done
+```
 
 ### Caddyfile Updater _(optional)_
 
