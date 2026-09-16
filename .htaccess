@@ -1,26 +1,9 @@
 RewriteEngine On
 
-# Redirect if NOT /manifest.json OR User-Agent does NOT start with Jellyfin-Server/
-RewriteCond %{REQUEST_URI} !/manifest\.json$ [OR]
-RewriteCond %{HTTP_USER_AGENT} !^Jellyfin-Server/
-RewriteRule ^.*$ https://github.com/intro-skipper/ [R=302,L]
+# Jellyfin 10.x → its own branch, 12.x → the shared "12" branch.
+RewriteCond %{REQUEST_URI} /manifest\.json$
+RewriteCond %{HTTP_USER_AGENT} ^Jellyfin-Server/(10\.[0-9]+|12)\.
+RewriteRule ^ https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/%1/manifest.json [R=302,L]
 
-# Specific redirects for Jellyfin-Server/10.11.*
-RewriteCond %{HTTP_USER_AGENT} ^Jellyfin-Server/10\.11\..*$
-RewriteRule ^.*$ https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.11/manifest.json [R=302,L]
-
-# Specific redirects for Jellyfin-Server/10.10.*
-RewriteCond %{HTTP_USER_AGENT} ^Jellyfin-Server/10\.10\..*$
-RewriteRule ^.*$ https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json [R=302,L]
-
-# Specific redirects for Jellyfin-Server/10.9.*
-RewriteCond %{HTTP_USER_AGENT} ^Jellyfin-Server/10\.9\..*$
-RewriteRule ^.*$ https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.9/manifest.json [R=302,L]
-
-# Specific redirects for Jellyfin-Server/10.8.*
-RewriteCond %{HTTP_USER_AGENT} ^Jellyfin-Server/10\.8\..*$
-RewriteRule ^.*$ https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.8/manifest.json [R=302,L]
-
-# Catch-all for any Jellyfin-Server/10.*
-RewriteCond %{HTTP_USER_AGENT} ^Jellyfin-Server/10\..*$
-RewriteRule ^.*$ https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json [R=302,L]
+# Everything else (wrong path, non-Jellyfin UA, unknown Jellyfin version) → GitHub
+RewriteRule ^ https://github.com/intro-skipper/ [R=302,L]
