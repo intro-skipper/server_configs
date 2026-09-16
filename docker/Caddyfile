@@ -7,52 +7,32 @@
 	}
 
 	vars {
-		default_version "10.11"
 		commit_hash "e0c7d065e10aa4882308bf55462f9bb6733f17bc"
 	}
 
 	@discord host discord.intro-skipper.org
 	redir @discord https://discord.gg/AYZ7RJ3BuA 308
 
+	# GitHub webhook receivers: only the secret path is reachable.
 	@github host fsn1.intro-skipper.org ams.intro-skipper.org fra.intro-skipper.org
 	handle @github {
-		@blocked {
-			not path /{$GITHUB_HOOK}
-		}
-		@hook {
-			path /{$GITHUB_HOOK}
-		}
-		abort @blocked
-		handle @hook {
+		handle /{$GITHUB_HOOK} {
 			rewrite /hook
 			reverse_proxy 127.0.0.1:8080
 		}
+		handle {
+			abort
+		}
 	}
 
-	# 1) All supported versions: any 10.x or 12.x
-	@ver12 {
+	# Jellyfin 10.x → its own branch, 12.x → the shared "12" branch.
+	@manifest {
 		path /manifest.json
-		header_regexp VER12 User-Agent ^Jellyfin-Server/12\.\d+\..*$
+		header_regexp VER User-Agent ^Jellyfin-Server/(10\.\d+|12)\.
 	}
-	redir @ver12 https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/12/manifest.json 302
+	redir @manifest https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/{re.VER.1}/manifest.json 302
 
-	@ver {
-		path /manifest.json
-		header_regexp VER User-Agent ^Jellyfin-Server/(10\.\d+)\..*$
-	}
-	redir @ver https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/{http.regexp.VER.1}/manifest.json 302
-
-	# 3a) Requests not for /manifest.json → GitHub
-	@notManifest {
-		not host fsn1.intro-skipper.org fra.intro-skipper.org ams.intro-skipper.org
-		not path /manifest.json
-	}
-	redir @notManifest https://github.com/intro-skipper/ 308
-
-	# 3b) /manifest.json but UA not Jellyfin-Server/* → GitHub
-	@manifestNoJelly {
-		path /manifest.json
-		not header User-Agent Jellyfin-Server/*
-	}
-	redir @manifestNoJelly https://github.com/intro-skipper/ 308
+	# Everything else (wrong path, non-Jellyfin UA, unknown Jellyfin version) → GitHub
+	@fallback not host fsn1.intro-skipper.org ams.intro-skipper.org fra.intro-skipper.org
+	redir @fallback https://github.com/intro-skipper/ 308
 }
