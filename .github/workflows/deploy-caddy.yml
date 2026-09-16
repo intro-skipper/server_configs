@@ -19,6 +19,7 @@ jobs:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
+          ping: fra,ams,germany
 
       - name: Resolve current manifest commit
         id: manifest
@@ -39,13 +40,8 @@ jobs:
         run: |
           set -euo pipefail
           for h in fra ams germany; do
-            # MagicDNS is not available on the runner's resolver; resolve via the tailnet peer list.
-            # Newly joined nodes may need a moment before peers are visible.
-            for i in 1 2 3 4 5 6; do
-              ip=$(sudo tailscale ip -4 "$h" 2>/dev/null) && break
-              sleep 5
-            done
-            [[ -n "${ip:-}" ]] || { echo "::error::could not resolve tailnet IP for $h"; exit 1; }
+            # MagicDNS is not available to the runner's resolver (so not to ssh); resolve via the tailnet peer list.
+            ip=$(sudo tailscale ip -4 "$h")
             host="root@$ip"
             echo "::group::$h ($ip)"
             sed "s/commit_hash \"[0-9a-f]*\"/commit_hash \"$HASH\"/" docker/Caddyfile \
