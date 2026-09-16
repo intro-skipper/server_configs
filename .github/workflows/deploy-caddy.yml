@@ -1,10 +1,6 @@
 name: Deploy Caddyfile
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - docker/Caddyfile
   workflow_dispatch:
 
 concurrency:
