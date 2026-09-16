@@ -39,6 +39,7 @@ The same steps can be run by hand from a machine on the tailnet:
 
 ```bash
 hash=$(git ls-remote https://github.com/intro-skipper/manifest.git refs/heads/main | cut -f1)
+[[ "$hash" =~ ^[0-9a-f]{40}$ ]] || { echo "could not resolve manifest@main"; exit 1; }
 for h in fra ams germany; do
   sed "s/commit_hash \"[0-9a-f]*\"/commit_hash \"$hash\"/" docker/Caddyfile | ssh root@$h 'cat > /home/caddy/Caddyfile.new'
   ssh root@$h bash -s < docker/deploy-remote.sh
