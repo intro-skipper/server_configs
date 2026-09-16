@@ -39,8 +39,15 @@ jobs:
         run: |
           set -euo pipefail
           for h in fra ams germany; do
-            host="root@$h.tailf8baf.ts.net"
-            echo "::group::$h"
+            # MagicDNS is not available on the runner's resolver; resolve via the tailnet peer list.
+            # Newly joined nodes may need a moment before peers are visible.
+            for i in 1 2 3 4 5 6; do
+              ip=$(sudo tailscale ip -4 "$h" 2>/dev/null) && break
+              sleep 5
+            done
+            [[ -n "${ip:-}" ]] || { echo "::error::could not resolve tailnet IP for $h"; exit 1; }
+            host="root@$ip"
+            echo "::group::$h ($ip)"
             sed "s/commit_hash \"[0-9a-f]*\"/commit_hash \"$HASH\"/" docker/Caddyfile \
               | ssh $SSH_OPTS "$host" 'cat > /home/caddy/Caddyfile.new'
             ssh $SSH_OPTS "$host" bash -s < docker/deploy-remote.sh
