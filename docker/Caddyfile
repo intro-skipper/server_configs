@@ -26,11 +26,18 @@
 	}
 
 	# Jellyfin 10.x → its own branch, 12.x → the shared "12" branch.
+	# Path matching is case-insensitive but the CDN is not, so emit fixed file names.
 	@manifest {
 		path /manifest.json
 		header_regexp VER User-Agent ^Jellyfin-Server/(10\.\d+|12)\.
 	}
 	redir @manifest https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/{re.VER.1}/manifest.json 302
+
+	@prerelease {
+		path /manifest-prerelease.json
+		header_regexp VER User-Agent ^Jellyfin-Server/(10\.\d+|12)\.
+	}
+	redir @prerelease https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/{re.VER.1}/manifest-prerelease.json 302
 
 	# Everything else (wrong path, non-Jellyfin UA, unknown Jellyfin version) → GitHub
 	@fallback not host fsn1.intro-skipper.org ams.intro-skipper.org fra.intro-skipper.org

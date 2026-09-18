@@ -62,7 +62,9 @@ jobs:
             case "$EXPECTED" in
               cdn:*)
                 VERSION="${EXPECTED#cdn:}"
-                if [[ "$ACTUAL" =~ ^https://cdn\.jsdelivr\.net/gh/intro-skipper/manifest@([0-9a-f]{40})/$VERSION/manifest\.json$ ]]; then
+                # Requested file name with its dots made literal for the regex below.
+                FILE_RE="${PATH#/}"; FILE_RE="${FILE_RE//./[.]}"
+                if [[ "$ACTUAL" =~ ^https://cdn\.jsdelivr\.net/gh/intro-skipper/manifest@([0-9a-f]{40})/$VERSION/$FILE_RE$ ]]; then
                   HASH="${BASH_REMATCH[1]}"
                   if [[ -z "$CDN_COMMIT" ]]; then
                     CDN_COMMIT="$HASH"
@@ -102,6 +104,10 @@ jobs:
             run_test "$HOST" "Jellyfin-Server/12.2.3" "/manifest.json" "cdn:12" "12.2 → 12 catalog"
             run_test "$HOST" "Jellyfin-Server/12.10.4" "/manifest.json" "cdn:12" "12.10 → 12 catalog"
             run_test "$HOST" "Jellyfin-Server/12.1.0-rc.1" "/manifest.json" "cdn:12" "12.1 prerelease → 12 catalog"
-            run_test "$HOST" "Jellyfin-Server/10.9.2" "/" "literal:https://github.com/intro-skipper/" "Not /manifest.json → GitHub"
+            run_test "$HOST" "Jellyfin-Server/10.11.0" "/manifest-prerelease.json" "cdn:10.11" "10.11 prerelease manifest → branch"
+            run_test "$HOST" "Jellyfin-Server/12.0.0" "/manifest-prerelease.json" "cdn:12" "12.0 prerelease manifest → 12 catalog"
+            run_test "$HOST" "Jellyfin-Server/10.9.2" "/" "literal:https://github.com/intro-skipper/" "Not a manifest file → GitHub"
+            run_test "$HOST" "Jellyfin-Server/12.0.0" "/manifest-prerelease" "literal:https://github.com/intro-skipper/" "Manifest-like path without .json → GitHub"
             run_test "$HOST" "curl/8.5.0" "/manifest.json" "literal:https://github.com/intro-skipper/" "Non-Jellyfin UA → GitHub"
+            run_test "$HOST" "curl/8.5.0" "/manifest-prerelease.json" "literal:https://github.com/intro-skipper/" "Non-Jellyfin UA prerelease manifest → GitHub"
           done
