@@ -41,5 +41,5 @@
 
 	# Everything else (wrong path, non-Jellyfin UA, unknown Jellyfin version) → GitHub
 	@fallback not host fsn1.intro-skipper.org ams.intro-skipper.org fra.intro-skipper.org
-	redir @fallback https://github.com/intro-skipper/ 308
+	redir @fallback https://github.com/intro-skipper/ 302
 }
