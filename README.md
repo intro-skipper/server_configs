@@ -4,7 +4,7 @@ Jellyfin currently has no way to limit the maximum ABI version. This means that 
 
 ## Caddy
 
-The easiest method of self-hosting is to use Caddy, which is how we currently deploy on DigitalOcean.  See the `docker-compose.yaml` and `Caddyfile` for reference.
+The easiest method of self-hosting is to use Caddy, which is how we currently deploy on Fyra Stack from Fyra Labs.  See the `docker-compose.yaml` and `Caddyfile` for reference.
 
 All Jellyfin 12.x clients use the canonical `12/manifest.json` catalog. Jellyfin 10.x clients keep their minor-version catalogs, such as `10.11/manifest.json`. The manifest publisher keeps `12.0/manifest.json` and `12.0/manifest-prerelease.json` synchronized with their `12/` counterparts for existing direct URLs.
 
@@ -72,13 +72,3 @@ All rules are `Custom filter expressions`
 | User Agent | strict wildcard | Jellyfin-Server/10.10.* | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.10/manifest.json> | 302         |
 | User Agent | strict wildcard | Jellyfin-Server/10.9.*  | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.9/manifest.json>  | 302         |
 | User Agent | strict wildcard | Jellyfin-Server/10.8.*  | Static                | <https://raw.githubusercontent.com/intro-skipper/manifest/refs/heads/main/10.8/manifest.json>  | 302         |
-
-## Reserved IPv6 DigitalOcean
-
-Inspired by DigitalOcean Docs [Enable Reserved IPv6](https://docs.digitalocean.com/products/networking/reserved-ips/how-to/manually-enable/#enable-reserved-ipv6)
-
-Our script generates and implements a permanent network plan.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/intro-skipper/server_configs/refs/heads/main/set_reserved_ipv6.sh | bash
-```
