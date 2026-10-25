@@ -19,7 +19,7 @@ jobs:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
-          ping: fra.tailf8baf.ts.net,ams.tailf8baf.ts.net,germany.tailf8baf.ts.net
+          ping: fra.tailf8baf.ts.net,ams.tailf8baf.ts.net,germany.tailf8baf.ts.net,neko.tailf8baf.ts.net,dog.tailf8baf.ts.net
 
       - name: Resolve current manifest commit
         id: manifest
@@ -39,7 +39,7 @@ jobs:
           SSH_OPTS: -o StrictHostKeyChecking=no -o ConnectTimeout=15
         run: |
           set -euo pipefail
-          for h in fra ams germany; do
+          for h in fra ams germany neko dog; do
             host="root@$h.tailf8baf.ts.net"
             echo "::group::$h"
             sed "s/commit_hash \"[0-9a-f]*\"/commit_hash \"$HASH\"/" docker/Caddyfile \
