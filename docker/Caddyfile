@@ -14,7 +14,7 @@
 	redir @discord https://discord.gg/AYZ7RJ3BuA 308
 
 	# GitHub webhook receivers: only the secret path is reachable.
-	@github host fsn1.intro-skipper.org ams.intro-skipper.org fra.intro-skipper.org neko.intro-skipper.org dog.intro-skipper.org
+	@github host fsn1.intro-skipper.org neko.intro-skipper.org dog.intro-skipper.org
 	handle @github {
 		handle /{$GITHUB_HOOK} {
 			rewrite /hook
@@ -40,6 +40,6 @@
 	redir @prerelease https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/{re.VER.1}/manifest-prerelease.json 302
 
 	# Everything else (wrong path, non-Jellyfin UA, unknown Jellyfin version) → GitHub
-	@fallback not host fsn1.intro-skipper.org ams.intro-skipper.org fra.intro-skipper.org neko.intro-skipper.org dog.intro-skipper.org
+	@fallback not host fsn1.intro-skipper.org neko.intro-skipper.org dog.intro-skipper.org
 	redir @fallback https://github.com/intro-skipper/ 302
 }

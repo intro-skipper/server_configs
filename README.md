@@ -17,7 +17,7 @@ Deployment is done by the **Deploy Caddyfile** GitHub Actions workflow ([`deploy
 1. Merge the Caddyfile change to `main`.
 2. Actions → **Deploy Caddyfile** → *Run workflow* (branch `main`).
 
-The workflow joins the tailnet with [tailscale/github-action](https://github.com/tailscale/github-action) as an ephemeral `tag:ci` node and, for each server (`fra`, `ams`, `germany`, `neko`, `dog`), over Tailscale SSH:
+The workflow joins the tailnet with [tailscale/github-action](https://github.com/tailscale/github-action) as an ephemeral `tag:ci` node and, for each server (`germany`, `neko`, `dog`), over Tailscale SSH:
 
 1. uploads `docker/Caddyfile` with `commit_hash` set to the current `intro-skipper/manifest@main` commit,
 2. runs [`docker/deploy-remote.sh`](docker/deploy-remote.sh), which validates the new config inside the Caddy container (so `{env.*}` placeholders resolve), overwrites `/home/caddy/Caddyfile` in place and gracefully reloads Caddy,
@@ -40,7 +40,7 @@ The same steps can be run by hand from a machine on the tailnet:
 ```bash
 hash=$(git ls-remote https://github.com/intro-skipper/manifest.git refs/heads/main | cut -f1)
 [[ "$hash" =~ ^[0-9a-f]{40}$ ]] || { echo "could not resolve manifest@main"; exit 1; }
-for h in fra ams germany neko dog; do
+for h in germany neko dog; do
   sed "s/commit_hash \"[0-9a-f]*\"/commit_hash \"$hash\"/" docker/Caddyfile | ssh root@$h 'cat > /home/caddy/Caddyfile.new'
   ssh root@$h bash -s < docker/deploy-remote.sh
 done
