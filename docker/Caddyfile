@@ -13,16 +13,12 @@
 	@discord host discord.intro-skipper.org
 	redir @discord https://discord.gg/AYZ7RJ3BuA 308
 
-	# GitHub webhook receivers: only the secret path is reachable.
-	@github host fsn1.intro-skipper.org neko.intro-skipper.org dog.intro-skipper.org
+	# GitHub webhook receiver: matched by the secret path on any host, so new
+	# servers need no Caddyfile change.
+	@github path /{$GITHUB_HOOK}
 	handle @github {
-		handle /{$GITHUB_HOOK} {
-			rewrite /hook
-			reverse_proxy 127.0.0.1:8080
-		}
-		handle {
-			abort
-		}
+		rewrite /hook
+		reverse_proxy 127.0.0.1:8080
 	}
 
 	# Jellyfin 10.x → its own branch, 12.x → the shared "12" branch.
@@ -40,6 +36,7 @@
 	redir @prerelease https://cdn.jsdelivr.net/gh/intro-skipper/manifest@{vars.commit_hash}/{re.VER.1}/manifest-prerelease.json 302
 
 	# Everything else (wrong path, non-Jellyfin UA, unknown Jellyfin version) → GitHub
-	@fallback not host fsn1.intro-skipper.org neko.intro-skipper.org dog.intro-skipper.org
+	# redir runs before handle in Caddy's directive order, so skip the hook path explicitly.
+	@fallback not path /{$GITHUB_HOOK}
 	redir @fallback https://github.com/intro-skipper/ 302
 }
