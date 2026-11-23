@@ -1,4 +1,5 @@
-*.intro-skipper.org intro-skipper.org {
+# Domain defaults to intro-skipper.org; set DOMAIN to run this config on another one.
+*.{$DOMAIN:intro-skipper.org} {$DOMAIN:intro-skipper.org} {
 	tls {
 		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 	}
@@ -10,7 +11,7 @@
 		commit_hash "e0c7d065e10aa4882308bf55462f9bb6733f17bc"
 	}
 
-	@discord host discord.intro-skipper.org
+	@discord host discord.{$DOMAIN:intro-skipper.org}
 	redir @discord https://discord.gg/AYZ7RJ3BuA 308
 
 	# GitHub webhook receiver: matched by the secret path on any host, so new
